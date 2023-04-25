@@ -1,0 +1,85 @@
+#include <iostream>
+#include <sys/types.h>
+#include <unistd.h>
+
+using namespace std;
+
+int main()
+{
+    pid_t pid; 
+    pid = fork(); 
+    
+    if (pid == 0) { 
+        cout << "This is the child process with pid: " << getpid() << endl; 
+    } 
+    else { 
+        cout << "This is the parent process with pid: " << getpid() << endl; 
+    } 
+    return 0; 
+}
+
+
+2.wait(),getpid()
+ 
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main(){
+    pid_t pid;
+    pid = fork();
+
+    if (pid < 0) {
+        printf("Fork Failed");
+        return 1;
+    }
+    else if (pid == 0) {
+        printf("Child Process, pid: %d\n", getpid());
+        sleep(5);
+    }
+    else {
+        printf("Parent Process, pid: %d\n", getpid());
+        wait(NULL);
+        printf("Child Process Terminated\n");
+    }
+    return 0;
+}
+
+
+
+3.exit(), getppid()
+ 
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <time.h>
+
+using namespace std;
+ 
+int main()
+{
+    pid_t pid = fork();
+ 
+    if (pid == 0)
+    {
+        cout << "Child Process created." << endl;
+        cout << "PID of child process: " << getpid() << endl;
+	   cout << "PID of parent process: " << getppid() << endl;
+        time_t start, end;
+        time(&start);
+        cout << "Child process started at: " << ctime(&start);
+        exit(0);
+    }
+    else
+    {
+        wait(NULL);
+        time_t end;
+        time(&end);
+        cout << "Child process terminated at: " << ctime(&end);
+    }
+    return 0;
+}
+

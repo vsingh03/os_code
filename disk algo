@@ -1,0 +1,495 @@
+Shortest Seek Time First (SSTF)
+Given an array of disk track numbers and initial head position, our task is to find the
+total number of seek operations done to access all the requested tracks if Shortest
+Seek Time First (SSTF) is a disk scheduling algorithm is used. Basic idea is the tracks
+which are closer to current disk head position should be serviced first in order to
+minimize the seek operations
+CODE
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+//Function to find the minimum absolute difference between two elements
+int minDifference(int a, int b)
+{
+    return (a > b) ? (a - b) : (b - a);
+}
+
+//Function to find the nearest request from current head position
+int nearestRequest(int head, vector<int> requestQueue)
+{
+    int minDiff = INT_MAX;
+    int nearestIndex = -1;
+    for (int i = 0; i < requestQueue.size(); i++)
+    {
+        int diff = minDifference(head, requestQueue[i]);
+        if (diff < minDiff)
+        {
+            minDiff = diff;
+            nearestIndex = i;
+        }
+    }
+    return nearestIndex;
+}
+
+//Function to implement SSTF disk scheduling algorithm
+void sstf(int head, vector<int> requestQueue)
+{
+    cout << "Order of access: ";
+    while (!requestQueue.empty())
+    {
+        int nearestIndex = nearestRequest(head, requestQueue);
+        cout << requestQueue[nearestIndex] << " ";
+        head = requestQueue[nearestIndex];
+        requestQueue.erase(requestQueue.begin() + nearestIndex);
+    }
+}
+
+int main()
+{
+    int head = 50;
+    vector<int> requestQueue = {95, 180, 34, 119, 11, 123, 62, 64};
+    sstf(head, requestQueue);
+    return 0;
+}
+
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Order of access: 62 64 34 11 95 119 123 180 
+
+SCAN (Elevator) algorithm
+In SCAN disk scheduling algorithm, head starts from one end of the disk and moves
+towards the other end, servicing requests in between one by one and reach the other
+end. Then the direction of the head is reversed and the process continues as head
+continuously scan back and forth to access the disk. So, this algorithm works as an
+elevator and hence also known as the elevator algorithm. As a result, the requests at
+the midrange are serviced more and those arriving behind the disk arm will have to
+wait.
+CODE
+#include "stdio.h"
+#include "stdlib.h"
+#include "stdbool.h"
+
+struct request
+{
+    int request_track_number;
+    bool visited;
+};
+
+int main()
+{
+    int i, no_of_requests, initial_head, limit, j, choice, previous_head;
+    printf("Enter the number of requests: ");
+    scanf("%d", &no_of_requests);
+    struct request req[no_of_requests];
+    printf("Enter the requests: ");
+    for (i = 0; i < no_of_requests; ++i)
+    {
+        scanf("%d", &req[i].request_track_number);
+        req[i].visited = false;
+    }
+    printf("Enter initial position of R/W head: ");
+    scanf("%d", &initial_head);
+
+    printf("Enter the previous position of R/W head: ");
+    scanf("%d", &previous_head);
+
+    printf("Enter the cylinder size: ");
+    scanf("%d", &limit);
+
+    if (previous_head - initial_head > 0)
+    {
+        choice = 2;
+    }
+    else
+        choice = 1;
+    // scanf("%d",&choice);
+    int seek_time = 0;
+    printf("%d -> ", initial_head);
+    if (choice == 1)
+    {
+        for (i = initial_head; i < limit; i++)
+        {
+            for (j = 0; j < no_of_requests; j++)
+            {
+                if (req[j].request_track_number == i && req[j].visited == false)
+                {
+                    printf("%d -> ", req[j].request_track_number);
+                    req[j].visited = true;
+                    seek_time += abs(req[j].request_track_number - initial_head);
+                    initial_head = req[j].request_track_number;
+                }
+            }
+        }
+        printf("%d -> ", limit - 1);
+        seek_time += abs(limit - 1 - initial_head);
+        initial_head = limit - 1;
+        for (i = initial_head; i >= 0; i--)
+        {
+            for (j = 0; j < no_of_requests; j++)
+            {
+                if (req[j].request_track_number == i && req[j].visited == false)
+                {
+                    printf("%d -> ", req[j].request_track_number);
+                    req[j].visited = true;
+                    seek_time += abs(req[j].request_track_number - initial_head);
+                    initial_head = req[j].request_track_number;
+                }
+            }
+        }
+        seek_time += abs(initial_head - 0);
+        printf("0 \n");
+    }
+    else if (choice == 2)
+    {
+        for (i = initial_head; i >= 0; i--)
+        {
+            for (j = 0; j < no_of_requests; j++)
+            {
+                if (req[j].request_track_number == i && req[j].visited == false)
+                {
+                    printf("%d -> ", req[j].request_track_number);
+                    req[j].visited = true;
+                    seek_time += abs(req[j].request_track_number - initial_head);
+                    initial_head = req[j].request_track_number;
+                }
+            }
+        }
+        printf("%d -> ", 0);
+        seek_time += abs(0 - initial_head);
+        initial_head = 0;
+        for (i = initial_head; i < limit; i++)
+        {
+            for (j = 0; j < no_of_requests; j++)
+            {
+                if (req[j].request_track_number == i && req[j].visited == false)
+                {
+                    printf("%d -> ", req[j].request_track_number);
+                    req[j].visited = true;
+                    seek_time += abs(req[j].request_track_number - initial_head);
+                    initial_head = req[j].request_track_number;
+                }
+            }
+        }
+        seek_time += abs(limit - 1 - initial_head);
+        printf("%d \n", limit - 1);
+    }
+    printf("Seek Time: %d\n", seek_time);
+}
+
+
+
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Enter the number of requests: 8
+Enter the requests: 176 79 34 60 92 11 41 114
+Enter initial position of R/W head: 34
+Enter the previous position of R/W head: 11
+Enter the cylinder size: 4
+34 -> 3 -> 0
+Seek Time: 34
+
+C-SCAN (Circular Elevator) Disk Scheduling Algorithm
+The circular SCAN (C-SCAN) scheduling algorithm is a modified version of the SCAN
+disk scheduling algorithm that deals with the inefficiency of the SCAN algorithm by
+servicing the requests more uniformly. Like SCAN (Elevator Algorithm) C-SCAN moves
+the head from one end servicing all the requests to the other end. However, as soon
+as the head reaches the other end, it immediately returns to the beginning of the disk
+without servicing any requests on the return trip (see chart below) and starts
+servicing again once reaches the beginning. This is also known as the “Circular
+Elevator Algorithm” as it essentially treats the cylinders as a circular list that wraps
+around from the final cylinder to the first one.
+CODE
+#include <iostream> 
+using namespace std; 
+
+// Function to find the total 
+// number of seek operations 
+int CSCAN(int arr[], int head, 
+                int n) 
+{ 
+    // Initialize result 
+    int seek_count = 0; 
+
+    // Find the index of the 
+    // disk (if it is present in array). 
+    int start = 0; 
+    for (int i = 0; i < n; i++) 
+        if (arr[i] == head) { 
+            start = i; 
+            break; 
+        } 
+
+    // To find the total number of 
+    // seek operations 
+    int end = (start - 1 + n) % n; 
+    int i = start; 
+    while (i != end) { 
+        seek_count++; 
+
+        // If we have reached the 
+        // end of the array, 
+        // start from the beginning 
+        if (i == (n - 1)) 
+            i = 0; 
+        else
+            i++; 
+    } 
+
+    // Return the total number 
+    // of seek operations 
+    return seek_count; 
+} 
+
+// Driver code 
+int main() 
+{ 
+    // n is the total number of 
+    // disk access requests 
+    int n = 10; 
+
+    // An array of size 8 
+    // to store the disk access 
+    // requests. The array is 
+    // circular. 
+    int arr[n];
+    cout<<"The Disk access request array is : ";
+    for(int i=0; i<n; i++){
+        arr[i] = (rand()%10)*(rand()%9);
+        cout<<arr[i]<<" ";
+    }
+
+    // Head position 
+    int head = 50; 
+
+    // Function call 
+    cout << endl<<"Seek time : " << CSCAN(arr, head, n); 
+
+    return 0; 
+}
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+The Disk access request array is : 8 16 9 0 4 10 6 5 40 0 
+Seek time : 9
+
+
+
+
+
+
+LOOK Disk Scheduling Algorithm
+LOOK is the advanced version of SCAN algorithm which gives slightly better seek time
+than any other algorithm in the hierarchy (FCFS->SRTF->SCAN->C-SCAN->LOOK). The LOOK algorithm services request similarly as SCAN algorithm meanwhile it also
+“looks” ahead as if there are more tracks that are needed to be serviced in the same
+direction. If there are no pending requests in the moving direction the head reverses
+the direction and start servicing requests in the opposite direction.
+The main reason behind the better performance of LOOK algorithm in comparison to SCAN is because in this algorithm the head is not allowed to move till the end of the
+disk.
+CODE
+#include <bits/stdc++.h>
+using namespace std;
+int sz = 8;
+int disk_size = 200;
+void LOOK(int arr[], int head, string direction)
+{
+    int seek_count = 0;
+    int distance, cur_track;
+    vector<int> left, right;
+    vector<int> seek_sequence;
+    // direction from the head.
+    for (int i = 0; i < sz; i ++)
+    {
+        if (arr[i] < head)
+            left.push_back(arr[i]);
+        if (arr[i] > head)
+            right.push_back(arr[i]);
+    }
+    sort(left.begin(), left.end());
+    sort(right.begin(), right.end());
+    int run = 2;
+    while (run --)
+    {
+        if (direction == "left")
+        {
+            for (int i = left.size() - 1; i == 0; i --)
+            {
+                cur_track = left[i];
+                seek_sequence.push_back(cur_track);
+                distance = abs(cur_track - head);
+                seek_count += distance;
+                head = cur_track;
+            }
+            direction = "right";
+        }
+        else if (direction == "right")
+        {
+            for (int i = 0; i < right.size(); i ++)
+            {
+                cur_track = right[i];
+                seek_sequence.push_back(cur_track);
+                distance = abs(cur_track - head);
+                seek_count += distance;
+                head = cur_track;
+            }
+            // reversing the direction
+                    direction = "left";
+        }
+    }
+    cout << "Total number of seek operations = " <<
+                                                    seek_count << endl;
+    cout << "Seek Sequence is" << endl;
+    for (int i = 0; i < seek_sequence.size(); i ++)
+    {
+        cout << seek_sequence[i] << endl;
+    }
+}
+// Driver code 
+int main()
+{
+    // request array 
+    int arr[sz] = {17,79,34,60,92,11,41,114};
+    int head = 50;
+    string direction = "right";
+    cout << "Initial position of head: " <<
+                                            head << endl;
+    LOOK(arr, head, direction);
+    return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Initial position of head: 50        
+Total number of seek operations = 64
+Seek Sequence is
+60
+79
+92
+114
+
+
+C-LOOK (Circular LOOK) Disk Scheduling Algorithm
+C-LOOK is an enhanced version of both SCAN as well as LOOK disk scheduling
+algorithms. This algorithm also uses the idea of wrapping the tracks as a circular
+cylinder as C-SCAN algorithm but the seek time is better than C-SCAN algorithm. We
+know that C-SCAN is used to avoid starvation and services all the requests more
+uniformly, the same goes for C-LOOK.
+In this algorithm, the head services requests only in one direction(either left or right)
+until all the requests in this direction are not serviced and then jumps back to the
+farthest request on the other direction and service the remaining requests which
+gives a better uniform servicing as well as avoids wasting seek time for going till the
+end of the disk.
+CODE
+#include<iostream>
+#include<bits/stdc++.h>
+
+using namespace std;
+
+//function to get the order of access
+vector<int> c_look_scheduling(vector<int> requests, int head)
+{
+    int n = requests.size();
+    vector<int> order;
+    int i = 0;
+    //sort the requests in ascending order
+    sort(requests.begin(), requests.end());
+
+    //search for the requests greater than head
+    while (i < n && requests[i] <= head)
+        i++;
+
+    //store the requests greater than head in order
+    int j = i;
+    while (j < n)
+    {
+        order.push_back(requests[j]);
+        j++;
+    }
+
+    //store the requests less than or equal to head in order
+    j = 0;
+    while (j < i)
+    {
+        order.push_back(requests[j]);
+        j++;
+    }
+
+    return order;
+}
+
+int main()
+{
+    vector<int> requests = { 176, 79, 34, 60, 92, 11, 41, 114 };
+    int head = 50;
+    vector<int> order = c_look_scheduling(requests, head);
+
+    //print the order
+    cout<<"The order of access is : ";
+    for (int i = 0; i < order.size(); i++)
+        cout << order[i] << " ";
+    return 0;
+}
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+The order of access is : 60 79 92 114 176 11 34 41 
+
+
+First Come First Serve (FCFS)
+FCFS is the simplest disk scheduling algorithm. As the name suggests, this algorithm entertains requests in the order they arrive in the disk queue. The algorithm looks very fair and there is no starvation (all requests are serviced sequentially) but generally, it does not provide the fastest service.
+
+CODE
+#include <iostream> 
+using namespace std; 
+  
+// Function to find the total 
+// number of seek operations 
+int FCFS(int start, int a[], int n) 
+{ 
+    // Initialize result (total number 
+    // of seek operations) 
+    int result = 0; 
+  
+    // Starting point is the current head position 
+    int curr = start; 
+  
+    // Traverse all cylinders 
+    for (int i = 0; i < n; i++) { 
+        // Find absolute difference between 
+        // current head position and cylinder 
+        // number a[i] 
+        result += abs(curr - a[i]); 
+  
+        // Update the current head position 
+        curr = a[i]; 
+        cout<<curr<<" ";
+    } 
+  
+    // Return the total number of seek operations 
+    return result; 
+} 
+  
+// Driver code 
+int main() 
+{ 
+    // Start position 
+    int start = 50; 
+  
+    // Request array 
+    int a[] = { 176, 79, 34, 60, 
+                92, 11, 41, 114 }; 
+  
+    // Size of array 
+    int n = sizeof(a) / sizeof(a[0]); 
+    cout<<"The sequence will be : ";
+    int seeks = FCFS(start, a, n);
+    cout << endl << "Total Number of Seek operations = "
+         <<seeks; 
+    return 0; 
+}

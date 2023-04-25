@@ -1,0 +1,608 @@
+FCFS
+
+First come ﬁrst serve (FCFS) scheduling algorithm simply schedules the jobs according to their arrival time. The job which comes ﬁrst in the ready queue will get the CPU ﬁrst. The lesser the arrival time of the job, the sooner the job will get the CPU.
+
+CODE
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct Process {
+    int id;
+    int burstTime;
+    int arrivalTime;
+    int waitTime;
+    int turnAroundTime;
+};
+
+// Function to calculate waiting time
+void calculateWaitingTime(vector<Process> processes, int n)
+{
+    // waiting time for first process is 0
+    processes[0].waitTime = 0;
+
+    // calculating waiting time
+    for (int i = 1; i < n; i++)
+        processes[i].waitTime =
+            processes[i - 1].waitTime + processes[i - 1].burstTime;
+}
+
+// Function to calculate turn around time
+void calculateTurnAroundTime(vector<Process> processes, int n)
+{
+    // calculating turnaround time by adding
+    // burst_time and waiting_time
+    for (int i = 0; i < n; i++)
+        processes[i].turnAroundTime =
+            processes[i].burstTime + processes[i].waitTime;
+}
+
+// Function to calculate average times
+void calculateAverageTime(vector<Process> processes, int n)
+{
+    int total_wait_time = 0, total_turn_around_time = 0;
+
+    // calculating total waiting time and total turn
+    // around time
+    for (int i = 0; i < n; i++) {
+        total_wait_time =
+            total_wait_time + processes[i].waitTime;
+        total_turn_around_time =
+            total_turn_around_time + processes[i].turnAroundTime;
+    }
+
+    cout << "Average waiting time = "
+         << (float)total_wait_time / (float)n;
+    cout << "\nAverage turn around time = "
+         << (float)total_turn_around_time / (float)n;
+}
+
+// Function to sort the processes according to arrival time
+void sortProcessesByArrivalTime(vector<Process>& processes, int n)
+{
+    Process temp;
+
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
+                temp = processes[j];
+                processes[j] = processes[j + 1];
+                processes[j + 1] = temp;
+            }
+}
+
+// Function to implement FCFS scheduling
+void FCFS(vector<Process> processes, int n)
+{
+    // Sort processes by arrival time
+    sortProcessesByArrivalTime(processes, n);
+
+    // Calculate waiting time
+    calculateWaitingTime(processes, n);
+
+    // Calculate turn around time
+    calculateTurnAroundTime(processes, n);
+
+    // Calculate average waiting and turn
+    // around times
+    calculateAverageTime(processes, n);
+}
+
+// Driver code
+int main()
+{
+    vector<Process> processes = { { 1, 6, 1, 0, 0 }, { 2, 8, 1, 0, 0 },
+        { 3, 7, 2, 0, 0 }, { 4, 3, 3, 0, 0 } };
+    int n = processes.size();
+
+    FCFS(processes, n);
+
+    return 0;
+}
+
+SHORTEST JOB FIRST (NON PREEMPTIVE)
+Shortest Job First (SJF) is an algorithm in which the process having the smallest execution time is chosen for the next execution. In non-preemptive scheduling, once the CPU cycle is allocated to a process, the process holds it till it reaches a waiting state or is terminated. This scheme is also known as Shortest Job Next.
+CODE
+include <bits/stdc++.h>
+using namespace std;
+
+struct Process
+{
+    int pid;
+    int bt;
+};
+
+bool comparison(Process a, Process b)
+{
+    return (a.bt < b.bt);
+}
+
+void findWaitingTime(Process proc[], int n, int wt[])
+{
+    wt[0] = 0;
+    for (int i = 1; i < n; i++)
+        wt[i] = proc[i - 1].bt + wt[i - 1];
+}
+
+void findTurnAroundTime(Process proc[], int n, int wt[], int tat[])
+{
+    for (int i = 0; i < n; i++)
+        tat[i] = proc[i].bt + wt[i];
+}
+
+void findavgTime(Process proc[], int n)
+{
+    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+    findWaitingTime(proc, n, wt);
+    findTurnAroundTime(proc, n, wt, tat);
+    cout << "Processes " << " Burst time " << " Waiting time " << " Turn around time\n";
+    for (int i = 0; i < n; i++)
+    {
+        total_wt = total_wt + wt[i];
+        total_tat = total_tat + tat[i];
+        cout << " " << proc[i].pid << "\t\t" << proc[i].bt << "\t\t " << wt[i] << "\t\t " << tat[i] << endl;
+    }
+    cout << "Average waiting time = " << (float)total_wt / (float)n;
+    cout << "\nAverage turn around time = " << (float)total_tat / (float)n;
+}
+
+int main()
+{
+    Process proc[] = {{1, 6}, {2, 8}, {3, 7}, {4, 3}};
+    int n = sizeof proc / sizeof proc[0];
+    sort(proc, proc + n, comparison);
+    cout << "Order in which processes gets executed\n";
+    for (int i = 0; i < n; i++)
+        cout << proc[i].pid << " ";
+    findavgTime(proc, n);
+    return 0;
+}
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Order in which processes gets executed
+4 1 3 2 Processes  Burst time  Waiting time  Turn around time
+ 4              3                0               3
+ 1              6                3               9
+ 3              7                9               16
+ 2              8                16              24
+Average waiting time = 7
+Average turn around time = 13
+
+SHORTEST JOB FIRST (PREEMPTIVE)
+Shortest Job First (SJF) is an algorithm in which the process having the smallest execution time is chosen for the next execution. In preemptive scheduling, once the CPU cycle is allocated to a process, the process may or may not hold it till it reaches a waiting state or is terminated.
+CODE
+// write a precise c++ code to demonstrate the SHORTEST JOB FIRST (PREEMPTIVE) cpu scheduling algorithm 
+ 
+
+#include<iostream> 
+using namespace std; 
+  
+// Function to find the waiting time for all 
+// processes 
+void findWaitingTime(int processes[], int n, 
+             int bt[], int wt[], int quantum) 
+{ 
+    // Make a copy of burst times bt[] to store remaining 
+    // burst times. 
+    int rem_bt[n]; 
+    for (int i = 0 ; i < n ; i++) 
+        rem_bt[i] =  bt[i]; 
+  
+    int t = 0; // Current time 
+  
+    // Keep traversing processes in round robin manner 
+    // until all of them are not done. 
+    while (1) 
+    { 
+        bool done = true; 
+  
+        // Traverse all processes one by one repeatedly 
+        for (int i = 0 ; i < n; i++) 
+        { 
+            // If burst time of a process is greater than 0 
+            // then only need to process further 
+            if (rem_bt[i] > 0) 
+            { 
+                done = false; // There is a pending process 
+  
+                if (rem_bt[i] > quantum) 
+                { 
+                    // Increase the value of t i.e. shows 
+                    // how much time a process has been processed 
+                    t += quantum; 
+  
+                    // Decrease the burst_time of current process 
+                    // by quantum 
+                    rem_bt[i] -= quantum; 
+                } 
+  
+                // If burst time is smaller than or equal to 
+                // quantum. Last cycle for this process 
+                else
+                { 
+                    // Increase the value of t i.e. shows 
+                    // how much time a process has been processed 
+                    t = t + rem_bt[i]; 
+  
+                    // Waiting time is current time minus time 
+                    // used by this process 
+                    wt[i] = t - bt[i]; 
+  
+                    // As the process gets fully executed 
+                    // make its remaining burst time = 0 
+                    rem_bt[i] = 0; 
+                } 
+            } 
+        } 
+  
+        // If all processes are done 
+        if (done == true) 
+          break; 
+    } 
+} 
+  
+// Function to calculate turn around time 
+void findTurnAroundTime(int processes[], int n, 
+                        int bt[], int wt[], int tat[]) 
+{ 
+    // Calculating turnaround time by adding 
+    // bt[i] + wt[i] 
+    for (int i = 0; i < n ; i++) 
+        tat[i] = bt[i] + wt[i]; 
+} 
+  
+// Function to calculate average time 
+void findavgTime(int processes[], int n, int bt[], 
+                                     int quantum) 
+{ 
+    int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+  
+    // Function to find waiting time of all processes 
+    findWaitingTime(processes, n, bt, wt, quantum); 
+  
+    // Function to find turn around time for all processes 
+    findTurnAroundTime(processes, n, bt, wt, tat); 
+  
+    // Display processes along with all details 
+    cout << "Processes "<< " Burst time "
+         << " Waiting time " << " Turn around time\n"; 
+  
+    // Calculate total waiting time and total turn 
+    // around time 
+    for (int i=0; i<n; i++) 
+    { 
+        total_wt = total_wt + wt[i]; 
+        total_tat = total_tat + tat[i]; 
+        cout << " " << i+1 << "\t\t" << bt[i] <<"\t "
+             << wt[i] <<"\t\t " << tat[i] <<endl; 
+    } 
+  
+    cout << "Average waiting time = "
+         << (float)total_wt / (float)n; 
+    cout << "\nAverage turn around time = "
+         << (float)total_tat / (float)n; 
+} 
+  
+// Driver code 
+int main() 
+{ 
+    // process id's 
+    int processes[] = { 1, 2, 3}; 
+    int n = sizeof processes / sizeof processes[0]; 
+  
+    // Burst time of all processes 
+    int burst_time[] = {10, 5, 8}; 
+  
+    // Time quantum 
+    int quantum = 2; 
+    findavgTime(processes, n, burst_time, quantum); 
+    return 0; 
+}
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Processes  Burst time  Waiting time  Turn around time
+ 1              10       13              23
+ 2              5        10              15
+ 3              8        13              21
+Average waiting time = 12
+Average turn around time = 19.6667
+
+
+ROUND ROBIN
+Each process is provided a ﬁxed time to execute, it is called a quantum. Once a process is executed for a given time period, it is preempted and another process executes for a given time period. Context switching is used to save states of preempted processes.
+
+CODE
+#include <iostream> 
+#include <queue> 
+using namespace std; 
+
+void findWaitingTime(int processes[], int n, 
+                    int bt[], int wt[], int quantum) 
+{    // burst times. 
+    int rem_bt[n]; 
+    for (int i = 0; i < n; i++) 
+        rem_bt[i] = bt[i]; 
+
+    int t = 0; // Current time 
+
+    // Keep traversing processes in round robin manner 
+    // until all of them are not done. 
+    while (1) 
+    { 
+        bool done = true; 
+
+        // Traverse all processes one by one repeatedly 
+        for (int i = 0; i < n; i++) 
+        { 
+            // If burst time of a process is greater than 0 
+            // then only need to process further 
+            if (rem_bt[i] > 0) 
+            { 
+                done = false; // There is a pending process 
+
+                if (rem_bt[i] > quantum) 
+                { 
+                    // Increase the value of t i.e. shows 
+                    // how much time a process has been processed 
+                    t += quantum; 
+
+                    // Decrease the burst_time of current process 
+                    // by quantum 
+                    rem_bt[i] -= quantum; 
+                } 
+
+                // If burst time is smaller than or equal to 
+                // quantum. Last cycle for this process 
+                else
+                { 
+                    // Increase the value of t i.e. shows 
+                    // how much time a process has been processed 
+                    t = t + rem_bt[i]; 
+
+                    // Waiting time is current time minus time 
+                    // used by this process 
+                    wt[i] = t - bt[i]; 
+
+                    // As the process gets fully executed 
+                    // make its remaining burst time = 0 
+                    rem_bt[i] = 0; 
+                } 
+            } 
+        } 
+
+        // If all processes are done 
+        if (done == true) 
+        break; 
+    } 
+} 
+
+// Function to calculate turn around time 
+void findTurnAroundTime(int processes[], int n, 
+                        int bt[], int wt[], int tat[]) 
+{ 
+    // calculating turnaround time by adding 
+    // bt[i] + wt[i] 
+    for (int i = 0; i < n; i++) 
+        tat[i] = bt[i] + wt[i]; 
+} 
+
+// Function to calculate average time 
+void findavgTime(int processes[], int n, int bt[], 
+                                int quantum) 
+{ 
+    int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+
+    // Function to find waiting time of all processes 
+    findWaitingTime(processes, n, bt, wt, quantum); 
+
+    // Function to find turn around time for all processes 
+    findTurnAroundTime(processes, n, bt, wt, tat); 
+
+    // Display processes along with all details 
+    cout << "Processes "<< " Burst time "
+        << " Waiting time " << " Turn around time\n"; 
+
+    // Calculate total waiting time and total turn 
+    // around time 
+    for (int i=0; i<n; i++) 
+    { 
+        total_wt = total_wt + wt[i]; 
+        total_tat = total_tat + tat[i]; 
+        cout << " " << i+1 << "\t\t" << bt[i] <<"\t "
+            << wt[i] <<"\t\t " << tat[i] <<endl; 
+    } 
+
+    cout << "Average waiting time = "
+        << (float)total_wt / (float)n; 
+    cout << "\nAverage turn around time = "
+        << (float)total_tat / (float)n; 
+} 
+
+// Driver code 
+int main() 
+{ 
+    // process id's 
+    int processes[] = { 1, 2, 3}; 
+    int n = sizeof processes / sizeof processes[0]; 
+
+    // Burst time of all processes 
+    int burst_time[] = {11, 2, 6}; 
+
+    // Time quantum 
+    int quantum = 2; 
+    cout<<"time quantum"<< quantum<<endl;
+    findavgTime(processes, n, burst_time, quantum); 
+
+    return 0; 
+}
+
+Output 
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+time quantum2
+Processes  Burst time  Waiting time  Turn around time
+ 1              11       8               19
+ 2              2        2               4
+ 3              6        8               14
+Average waiting time = 6
+Average turn around time = 12.3333
+
+LONGEST REMAINING TIME FIRST
+This is a preemptive version of Longest Job First algorithm. Here, we continuously check for the process with the maximum remaining time and execute it.
+
+
+CODE
+#include <iostream>
+#include <vector>
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Process {
+    int id;
+    int burst_time;
+    int waiting_time;
+};
+
+int main()
+{
+    vector<Process> processes;
+
+    // Assume that the processes are given in the vector
+    Process p1 = {1, 5, 0};
+    Process p2 = {2, 7, 0};
+    Process p3 = {3, 2, 0};
+    Process p4 = {4, 4, 0};
+    processes.push_back(p1);
+    processes.push_back(p2);
+    processes.push_back(p3);
+    processes.push_back(p4);
+
+    // Sort the processes based on their burst time
+    sort(processes.begin(), processes.end(), [](Process a, Process b) {
+        return a.burst_time > b.burst_time;
+    });
+
+    // Calculate the waiting time for each process
+    int total_waiting_time = 0;
+    for (int i = 0; i < processes.size(); i++) {
+        if (i == 0) {
+            processes[i].waiting_time = 0;
+        } else {
+            processes[i].waiting_time = processes[i - 1].waiting_time + processes[i - 1].burst_time;
+        }
+        total_waiting_time += processes[i].waiting_time;
+    }
+
+    // Output the waiting time for each process
+    cout << "Process\tWaiting Time" << endl;
+    for (int i = 0; i < processes.size(); i++) {
+        cout << processes[i].id << "\t" << processes[i].waiting_time << endl;
+    }
+    cout << "Total waiting time: " << total_waiting_time << endl;
+
+    return 0;
+}
+
+Output 
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Process Waiting Time
+2       0
+1       7
+4       12
+3       16
+Total waiting time: 35
+
+Priority Scheduling 
+Priority Scheduling is a method of scheduling processes that is based on priority. In this algorithm, the scheduler selects the tasks to work as per the priority.The processes with higher priority should be carried out first, whereas jobs with equal priorities are carried out on a round-robin or FCFS basis. Priority depends upon memory requirements, time requirements, etc.
+ Code
+#include <iostream>
+#include <queue>
+#include<bits/stdc++.h>
+
+using namespace std;
+
+// Structure for a process
+struct Process {
+    int pid;  // Process ID
+    int bt;   // Burst Time
+    int priority; // Priority
+};
+
+// Function to sort the Process acc. to priority
+bool comparison(Process a, Process b) {
+    return (a.priority > b.priority);
+}
+
+// Function to calculate the waiting time for all
+// processes
+void findWaitingTime(Process proc[], int n, int wt[]) {
+    // waiting time for first process is 0
+    wt[0] = 0;
+
+    // calculating waiting time
+    for (int i = 1; i < n ; i++ )
+        wt[i] = proc[i-1].bt + wt[i-1] ;
+}
+
+// Function to calculate turn around time
+void findTurnAroundTime(Process proc[], int n, int wt[], int tat[]) {
+    // calculating turnaround time by adding
+    // bt[i] + wt[i]
+    for (int i = 0; i < n ; i++)
+        tat[i] = proc[i].bt + wt[i];
+}
+
+// Function to calculate average time
+void findavgTime(Process proc[], int n) {
+    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+
+    // Function to find waiting time of all processes
+    findWaitingTime(proc, n, wt);
+
+    // Function to find turn around time for all processes
+    findTurnAroundTime(proc, n, wt, tat);
+
+    // Display processes along with all details
+    cout << "\nProcesses  "<< " Burst time  "<< " Waiting time  " << " Turn around time\n";
+
+    // Calculate total waiting time and total turn
+    // around time
+    for (int i=0; i<n; i++) {
+        total_wt = total_wt + wt[i];
+        total_tat = total_tat + tat[i];
+        cout << "   " << proc[i].pid << "\t\t" << proc[i].bt << "\t    " << wt[i] << "\t\t  " << tat[i] <<endl;
+    }
+
+    cout << "\nAverage waiting time = " << (float)total_wt / (float)n;
+    cout << "\nAverage turn around time = " << (float)total_tat / (float)n;
+}
+
+// Driver code
+int main() {
+    Process proc[] = {{1, 10, 2}, {2, 5, 0}, {3, 8, 1}};
+    int n = sizeof proc / sizeof proc[0];
+
+    // Sorting processes by priority
+    sort(proc, proc + n, comparison);
+
+    cout << "Order in which process gets executed\n";
+    for (int i = 0 ; i < n; i++)
+        cout << proc[i].pid <<" ";
+
+    findavgTime(proc, n);
+    return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Order in which process gets executed
+1 3 2
+Processes   Burst time   Waiting time   Turn around time
+   1            10          0             10
+   3            8           10            18
+   2            5           18            23
+
+Average waiting time = 9.33333
+Average turn around time = 17

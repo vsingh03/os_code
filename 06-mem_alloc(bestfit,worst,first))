@@ -1,0 +1,155 @@
+: Memory Allocation methods(Best fit, Worst fit and First fit)
+
+CODE :
+#include <iostream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+struct Process
+{
+    int process_number;
+    int size;
+    int block_number;
+};
+
+// Best fit memory allocation
+void best_fit(vector<Process>& processes, vector<int>& blocks)
+{
+    for (Process& p : processes)
+    {
+        int best_fit_index = -1;
+        int best_fit_size = INT_MAX;
+
+        for (int i = 0; i < blocks.size(); i++)
+        {
+            if (blocks[i] >= p.size && blocks[i] < best_fit_size)
+            {
+                best_fit_index = i;
+                best_fit_size = blocks[i];
+            }
+        }
+
+        if (best_fit_index != -1)
+        {
+            p.block_number = best_fit_index;
+            blocks[best_fit_index] -= p.size;
+        }
+    }
+}
+
+// Worst fit memory allocation
+void worst_fit(vector<Process>& processes, vector<int>& blocks)
+{
+    for (Process& p : processes)
+    {
+        int worst_fit_index = -1;
+        int worst_fit_size = INT_MIN;
+
+        for (int i = 0; i < blocks.size(); i++)
+        {
+            if (blocks[i] >= p.size && blocks[i] > worst_fit_size)
+            {
+                worst_fit_index = i;
+                worst_fit_size = blocks[i];
+            }
+        }
+
+        if (worst_fit_index != -1)
+        {
+            p.block_number = worst_fit_index;
+            blocks[worst_fit_index] -= p.size;
+        }
+    }
+}
+
+// First fit memory allocation
+void first_fit(vector<Process>& processes, vector<int>& blocks)
+{
+    for (Process& p : processes)
+    {
+        int first_fit_index = -1;
+
+        for (int i = 0; i < blocks.size(); i++)
+        {
+            if (blocks[i] >= p.size)
+            {
+                first_fit_index = i;
+                break;
+            }
+        }
+
+        if (first_fit_index != -1)
+        {
+            p.block_number = first_fit_index;
+            blocks[first_fit_index] -= p.size;
+        }
+    }
+}
+
+// Main
+int main()
+{
+    // Input processes
+    vector<Process> processes = {
+        {1, 20, -1},
+        {2, 10, -1},
+        {3, 15, -1},
+        {4, 20, -1}
+    };
+
+    // Input memory blocks
+    vector<int> blocks = {30, 20, 10, 25};
+
+    // Best fit
+    cout << "Best fit:" << endl;
+    best_fit(processes, blocks);
+    for (Process p : processes)
+        cout << "Process " << p.process_number << " allocated block " << p.block_number << endl;
+    cout << endl;
+
+    // Reset memory blocks
+    blocks = {30, 20, 10, 25};
+
+    // Worst fit
+    cout << "Worst fit:" << endl;
+    worst_fit(processes, blocks);
+    for (Process p : processes)
+        cout << "Process " << p.process_number << " allocated block " << p.block_number << endl;
+    cout << endl;
+
+    // Reset memory blocks
+    blocks = {30, 20, 10, 25};
+
+    // First fit
+    cout << "First fit:" << endl;
+    first_fit(processes, blocks);
+    for (Process p : processes)
+        cout << "Process " << p.process_number << " allocated block " << p.block_number << endl;
+    cout << endl;
+
+    return 0;
+}
+
+
+
+OUTPUT :
+ PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Best fit:
+Process 1 allocated block 1
+Process 2 allocated block 2
+Process 3 allocated block 3
+Process 4 allocated block 0
+
+Worst fit:
+Process 1 allocated block 0
+Process 2 allocated block 3
+Process 3 allocated block 1
+Process 4 allocated block 0
+
+First fit:
+Process 1 allocated block 0
+Process 2 allocated block 0
+Process 3 allocated block 1
+Process 4 allocated block 3

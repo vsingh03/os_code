@@ -1,0 +1,146 @@
+Producer-Consumer problem
+#include <iostream>
+#include <queue>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
+#include <string>
+ 
+using namespace std;
+ 
+// Queue into which producer adds data and from which the consumer picks data
+queue<long> dataQ; 
+ 
+// first one is for the producer consumer operation, the second one to sync the prints 
+mutex pc_mu, print_mu; 
+ 
+// Conditional variable for the producer consumer sync
+condition_variable consumerwait_cv; 
+ 
+ 
+void Print(string str)
+{
+    // Let us have the Print also guarded so that the output appears sequential
+    lock_guard<mutex> lg(print_mu); 
+    cout << str << endl;
+}
+ 
+void Producer()
+{
+    int index = 0;
+    while (1)
+    {
+        unique_lock<mutex> ul(pc_mu);
+ 
+        // If more than 4 unprocessed items are in the data queue, 
+        // wait for sometime before adding more
+        if (dataQ.size() >= 5) 
+        {
+            consumerwait_cv.wait(ul, []() {return !(dataQ.size() >= 5); });
+        }
+ 
+        dataQ.push(index);
+        // Unlock the lock and notify the consumer that data is available
+        ul.unlock(); 
+        consumerwait_cv.notify_one();
+        // Just adding some random delay
+        this_thread::sleep_for(chrono::milliseconds(100)); 
+ 
+        Print(" Producer produced " + to_string(index));
+ 
+        index++;
+    }
+}
+ 
+void Consumer()
+{
+    while (1)
+    {
+        unique_lock<mutex> ul(pc_mu);
+        if (dataQ.empty()) // If the data queue is empty, 
+            // wait for the producer to add something to it
+        {
+            // Predicate should return false to continue waiting. 
+            // Thus, if the queue is empty, predicate should return false (!q.empty())
+            consumerwait_cv.wait(ul, []() {return !dataQ.empty(); }); 
+        }
+ 
+        ul.unlock(); // Unlock the lock to unblock the producer. 
+        // If this statement is commented, the producer is blocked till this loop ends
+        int element = dataQ.front(); // Pick the element from the queue
+        dataQ.pop();
+ 
+        consumerwait_cv.notify_one(); // Tell the producer that they can go ahead
+        // since 1 element is now popped off for processing
+ 
+        // Wait for some time to show that the consumer is slower than the producer
+        this_thread::sleep_for(chrono::milliseconds(1000)); 
+        Print(" Consumer got " + to_string(element));
+    }
+}
+ 
+ 
+int main()
+{
+    thread prod(Producer);
+    thread cons(Consumer);
+ 
+    prod.detach();
+    cons.detach();
+ 
+    // Wait in an infinite loop to see the producer consumer flow happen
+    while (1); 
+}  
+
+Output
+Producer produced 0
+ Producer produced 1
+ Producer produced 2
+ Producer produced 3
+ Producer produced 4
+ Producer produced 5
+ Consumer got 0
+ Producer produced 6
+ Consumer got 1
+ Producer produced 7
+ Consumer got 2
+ Producer produced 8
+
+IPC (Inter Process Communication)
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/shm.h>
+#include<string.h>
+int main()
+{
+int i;
+void *shared_memory;
+char buff[100];
+int shmid;
+shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
+//creates shared memory segment with key 2345,
+//having size 1024 bytes. IPC_CREAT is used to create
+//the shared segment if it does not exist. 0666 are the
+//permissions on the shared segment
+printf("Key of shared memory is %d\n",shmid);
+shared_memory=shmat(shmid,NULL,0);
+//process attached to shared memory segment
+printf("Process attached at %p\n",shared_memory);
+//this prints the address where the segment is
+//attached with this process
+printf("Enter some data to write to shared memory\n");
+read(0,buff,100); //get some input from user
+//data written to shared memory
+strcpy((char*)shared_memory,buff);
+printf("You wrote : %s\n",(char *)shared_memory);
+return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Key of shared memory is 0
+Process attached at 0x14ec5fc2c000
+Enter some data to write to shared memory
+You wrote : 24

@@ -1,0 +1,37 @@
+CODE
+#include <iostream>
+#include <thread>
+#include <mutex>
+
+std::mutex m;
+
+void criticalSection(int threadId)
+{
+    // Entering critical section
+    m.lock();
+
+    std::cout << "Thread " << threadId << " is in critical section" << std::endl;
+
+    // Simulate some work
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Leaving critical section
+    m.unlock();
+}
+
+int main()
+{
+    std::thread t1(criticalSection, 1);
+    std::thread t2(criticalSection, 2);
+    std::thread t3(criticalSection, 3);
+    t1.join();
+    t2.join();
+    t3.join();
+
+    return 0;
+}
+Output
+PS E:\SPECIAL ONE\Contest>
+Thread 3 is in critical section
+Thread 2 is in critical section
+Thread 1 is in critical section

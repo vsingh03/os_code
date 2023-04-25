@@ -1,0 +1,95 @@
+#include <iostream>
+using namespace std;
+
+// Banker's Algorithm
+int BankersAlgorithm(int resources[], int max[][10], int allocation[][10], int need[][10], int n, int m)
+{
+    int work[m], finish[n], safe[n];
+    int i, j, k, count=0;
+
+    // Input
+    cout<<"Enter the number of processes: ";
+    cin>>n;
+    cout<<"Enter the number of resources: ";
+    cin>>m;
+    cout<<"Enter the available resources: ";
+    for(i=0; i<m; i++)
+        cin>>resources[i];
+    cout<<"Enter the maximum matrix: ";
+    for(i=0; i<n; i++)
+        for(j=0; j<m; j++)
+            cin>>max[i][j];
+    cout<<"Enter the allocation matrix: ";
+    for(i=0; i<n; i++)
+        for(j=0; j<m; j++)
+            cin>>allocation[i][j];
+
+    // Calculation
+    for(i=0; i<n; i++)
+        for(j=0; j<m; j++)
+            need[i][j] = max[i][j] - allocation[i][j];
+    for(i=0; i<m; i++)
+        work[i] = resources[i];
+    for(i=0; i<n; i++)
+        finish[i] = 0;
+    while(count < n)
+    {
+        int flag = 0;
+        for(i=0; i<n; i++)
+        {
+            if(finish[i] == 0)
+            {
+                for(j=0; j<m; j++)
+                {
+                    if(need[i][j] > work[j])
+                        break;
+                }
+                if(j == m)
+                {
+                    for(k=0; k<m; k++)
+                        work[k] += allocation[i][k];
+                    safe[count++] = i;
+                    finish[i] = 1;
+                    flag = 1;
+                }
+            }
+        }
+        if(flag == 0)
+            break;
+    }
+
+    // Output
+    cout<<"\nThe safe sequence is: ";
+    if(count < n)
+        cout<<"Not Possible";
+    else
+        for(i=0; i<n; i++)
+            cout<<safe[i]<<" ";
+    cout<<"\n";
+
+    return 0;
+}
+
+int main()
+{
+    int resources[10], max[10][10], allocation[10][10], need[10][10], n, m;
+    BankersAlgorithm(resources, max, allocation, need, n, m);
+    return 0;
+}
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Enter the number of processes: 5
+Enter the number of resources: 3
+Enter the available resources: 3 3 2
+Enter the maximum matrix: 3 2 2
+9 0 2
+2 2 2
+4 3 3
+3 3 2
+Enter the allocation matrix: 0 1 0
+2 0 0
+3 0 2
+2 1 1
+0 0 2
+
+The safe sequence is: Not Possible

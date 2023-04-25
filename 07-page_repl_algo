@@ -1,0 +1,419 @@
+page replacement algorithms
+
+CODE:
+a)	FIFO
+#include <bits/stdc++.h>
+using namespace std;
+
+int pageFaults(int pages[], int n, int capacity)
+{
+    unordered_set<int> s;
+    queue<int> indexes;
+
+    int page_faults = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (s.size() < capacity)
+        {
+            if (s.find(pages[i]) == s.end())
+            {
+
+                s.insert(pages[i]);
+
+                page_faults++;
+
+                indexes.push(pages[i]);
+            }
+        }
+
+        else
+        {
+            if (s.find(pages[i]) == s.end())
+            {
+
+                int val = indexes.front();
+
+                indexes.pop();
+                s.erase(val);
+                s.insert(pages[i]);
+                indexes.push(pages[i]);
+
+                page_faults++;
+            }
+        }
+    }
+    return page_faults;
+}
+int main()
+{
+    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4,
+                   2, 3, 0, 3, 2};
+    int n = sizeof(pages) / sizeof(pages[0]);
+    int capacity = 4;
+    cout << "Total page faults occured : "<< pageFaults(pages, n, capacity);
+    return 0;
+}
+
+
+
+OUTPUT :
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Total page faults occured : 7
+
+
+ 
+
+
+
+
+b)	LRU
+#include <bits/stdc++.h>
+using namespace std;
+
+int pageFaults(int pages[], int n, int capacity)
+{
+    unordered_set<int> s;
+
+    unordered_map<int, int> indexes;
+
+    int page_faults = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (s.size() < capacity)
+        {
+            if (s.find(pages[i]) == s.end())
+            {
+                s.insert(pages[i]);
+
+                page_faults++;
+            }
+
+            indexes[pages[i]] = i;
+        }
+        else
+        {
+            if (s.find(pages[i]) == s.end())
+            {
+                int lru = INT_MAX, val;
+                for (auto it = s.begin(); it != s.end(); it++)
+                {
+                    if (indexes[*it] < lru)
+                    {
+                        lru = indexes[*it];
+                        val = *it;
+                    }
+                }
+
+                s.erase(val);
+                s.insert(pages[i]);
+                page_faults++;
+            }
+            indexes[pages[i]] = i;
+        }
+    }
+    return page_faults;
+}
+int main()
+{
+    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
+    int n = sizeof(pages) / sizeof(pages[0]);
+    int capacity = 4;
+    cout << "Total page faults occured : "<<pageFaults(pages, n, capacity);
+    return 0;
+}
+
+
+Output:
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Total page faults occured : 6
+
+
+
+
+
+
+
+c)	MFU
+#include <iostream>
+using namespace std;
+#define FRAMES_NUMBER 3
+
+int MFU(int pages[], int size)
+{
+    int frames[FRAMES_NUMBER];
+    for (int i = 0; i < FRAMES_NUMBER; i++)
+        frames[i] = -1;
+ 
+    int paeFaults = 0; 
+ 
+    for (int pageIndex = 0; pageIndex < size; pageIndex++)
+    {
+ 
+        bool isFound = false;
+        for (int i = 0; i < FRAMES_NUMBER; i++)
+            if (frames[i] == pages[pageIndex])
+            {
+                isFound = true;
+                break;
+            }
+ 
+        if (!isFound)
+        {
+ 
+            bool hasFreeFrame = false;
+            for (int i = 0; i < FRAMES_NUMBER; i++)
+                if (frames[i] == -1)
+                {
+                    hasFreeFrame = true;
+                    frames[i] = pages[pageIndex];
+                    paeFaults++;
+ 
+                    break;
+                }
+ 
+            if (!hasFreeFrame)
+            {
+ 
+                int countUse[FRAMES_NUMBER] = {0};
+ 
+                for (int i = 0; i < FRAMES_NUMBER; i++)
+                    for (int p = pageIndex; p >= 0; p--)
+                        if (pages[p] == frames[i])
+                            countUse[i]++;
+ 
+                int victim = 0;
+                for (int i = 0; i < FRAMES_NUMBER; i++)
+                    if (countUse[i] > countUse[victim])
+                        victim = i;
+ 
+                frames[victim] = pages[pageIndex];
+                paeFaults++;
+ 
+          
+            }
+        }
+    }
+    return paeFaults;
+}
+ 
+int main(int argc, char const *argv[])
+{
+    int pages[] = {1, 2, 3, 1, 4, 5, 2, 1, 2, 6, 7, 3, 2};
+ 
+    cout << "Number Of Page Faults = " << MFU(pages, 13);
+ 
+    getchar();
+    return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Total page faults occured : 10
+
+d)	MRU
+#include <iostream>
+using namespace std;
+#define FRAMES_NUMBER 3
+int MRU(int pages[], int size)
+{
+    int frames[FRAMES_NUMBER];
+    for (int i = 0; i < FRAMES_NUMBER; i++)
+        frames[i] = -1;
+    int paeFaults = 0; 
+    for (int pageIndex = 0; pageIndex < size; pageIndex++)
+    {
+        bool isFound = false;
+        for (int i = 0; i < FRAMES_NUMBER; i++)
+            if (frames[i] == pages[pageIndex])
+            {
+                isFound = true;
+ 
+                break;
+            }
+ 
+        if (!isFound)
+        {
+            bool hasFreeFrame = false;
+            for (int i = 0; i < FRAMES_NUMBER; i++)
+                if (frames[i] == -1)
+                {
+                    hasFreeFrame = true;
+                    frames[i] = pages[pageIndex];
+                    paeFaults++;
+                    break;
+                }
+            if (!hasFreeFrame)
+            {
+ 
+                int lastUse[FRAMES_NUMBER];
+ 
+                for (int i = 0; i < FRAMES_NUMBER; i++)
+                    for (int p = pageIndex; p >= 0; p--)
+                        if (pages[p] == frames[i])
+                        {
+                            lastUse[i] = p;
+                            break;
+                        }
+ 
+                int victim = 0;
+                for (int i = 0; i < FRAMES_NUMBER; i++)
+                    if (lastUse[i] > lastUse[victim])
+                        victim = i;
+ 
+                frames[victim] = pages[pageIndex];
+                paeFaults++;
+ 
+            }
+        }
+    }
+    return paeFaults;
+}
+ 
+int main()
+{
+    int pages[] = {1, 2, 3, 1, 4, 5, 2, 1, 2, 6, 7, 3, 2};
+ 
+    cout << "Number Of Page Faults = " << MRU(pages, 13);
+ 
+    getchar();
+    return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Total page faults occured : 10
+
+
+e)	Second Chance and Enhanced Second Chance
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const int PAGE_SIZE = 4;
+
+void SecondChance(vector<int> &pages, int page)
+{
+    bool found = false;
+    int replaceIndex = 0;
+
+    //Check if page is already in memory
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        if (pages[i] == page)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    //If page is not in memory
+    if (!found)
+    {
+        //Replace the page with the lowest reference bit
+        for (int i = 0; i < PAGE_SIZE; i++)
+        {
+            if (pages[i] == 0)
+            {
+                replaceIndex = i;
+                break;
+            }
+            else if (pages[i] == 1)
+            {
+                replaceIndex = i;
+            }
+        }
+        pages[replaceIndex] = page;
+    }
+
+    //Print the results
+    cout << "After Second Chance: [ ";
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        cout << pages[i] << " ";
+    }
+    cout << "]" << endl;
+}
+
+//Enhanced Second Chance Page Replacement Algorithm
+
+void EnhancedSecondChance(vector<int> &pages, int page)
+{
+    bool found = false;
+    int replaceIndex = 0;
+
+    //Check if page is already in memory
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        if (pages[i] == page)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    //If page is not in memory
+    if (!found)
+    {
+        //Replace the page with the lowest reference and modified bits
+        for (int i = 0; i < PAGE_SIZE; i++)
+        {
+            if (pages[i] == 0)
+            {
+                replaceIndex = i;
+                break;
+            }
+            else if (pages[i] == 1)
+            {
+                replaceIndex = i;
+            }
+            else if (pages[i] == 2)
+            {
+                replaceIndex = i;
+            }
+        }
+        pages[replaceIndex] = page;
+    }
+
+    //Print the results
+    cout << "After Enhanced Second Chance: [ ";
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        cout << pages[i] << " ";
+    }
+    cout << "]" << endl;
+}
+
+int main()
+{
+    vector<int> pages(PAGE_SIZE);
+
+    //Initialize the pages
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        pages[i] = i + (rand()%10);
+    }
+
+    //Print the initial pages
+    cout << "Initial Pages: [ ";
+    for (int i = 0; i < PAGE_SIZE; i++)
+    {
+        cout << pages[i] << " ";
+    }
+    cout << "]" << endl;
+
+    //Call the Second Chance and Enhanced Second Chance algorithms
+    int page = 5;
+    SecondChance(pages, page);
+    EnhancedSecondChance(pages, page);
+
+    return 0;
+}
+
+
+Output
+PS E:\SPECIAL ONE\Contest> cd "e:\SPECIAL ONE\Contest\" ; if ($?) { g++ 14a.cpp -o 14a } ; if ($?) { .\14a }
+Initial Pages: [ 1 8 6 3 ]
+After Second Chance: [ 5 8 6 3 ]
+After Enhanced Second Chance: [ 5 8 6 3 ]
